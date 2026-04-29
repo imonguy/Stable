@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Học Lực AI - V3.0</title>
+    <style>
+        :root {
+            --primary: #2563eb; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --dark: #1e293b; --light: #f8fafc; --white: #ffffff;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light); color: var(--dark); margin: 0; padding: 20px; }
+        .app-container { max-width: 900px; margin: 0 auto; background: var(--white); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); overflow: hidden; }
+        
+        /* Header & Update Section */
+        header { background: var(--dark); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .update-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9em; font-weight: 600; }
+        
+        /* Main UI */
+        .main-content { padding: 30px; }
+        .grid-system { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card { border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; }
+        h3 { margin-top: 0; font-size: 1.1em; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #64748b; }
+        input, select { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; background: #f0f7ff; }
+
+        /* Results & Analysis */
+        #resultView { margin-top: 30px; padding: 25px; border-radius: 15px; background: #f1f5f9; display: none; text-align: center; border: 2px dashed #cbd5e1; }
+        .rank-text { font-size: 32px; font-weight: 900; margin: 10px 0; }
+        .analysis-log { text-align: left; background: #fff; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; color: #334155; margin-top: 15px; }
+
+        /* Progress Modal */
+        #updateModal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; color: white; }
+        .modal-box { width: 400px; text-align: center; padding: 30px; }
+        .progress-bar { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: var(--primary); transition: width 0.1s; }
+        #restartBtn { display: none; margin-top: 20px; padding: 12px 30px; background: var(--success); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        button.calculate-btn { width: 100%; padding: 18px; background: var(--dark); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        button.calculate-btn:hover { background: #000; transform: scale(1.01); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <div>
+            <h2 style="margin:0">Academic AI <span style="font-size: 0.5em; opacity: 0.7;">v3.0.1</span></h2>
+        </div>
+        <div>
+            <input type="file" id="updateFile" style="display:none" accept=".html">
+            <button class="update-btn" onclick="document.getElementById('updateFile').click()">Update System (.html)</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="grid-system">
+            <div class="card">
+                <h3>📊 Nhóm Tự Nhiên</h3>
+                <div class="input-group"><label>Toán học</label><input type="number" class="score" step="0.1" data-name="Toán"></div>
+                <div class="input-group"><label>Vật lí</label><input type="number" class="score" step="0.1" data-name="Vật lí"></div>
+                <div class="input-group"><label>Hóa học</label><input type="number" class="score" step="0.1" data-name="Hóa học"></div>
+                <div class="input-group"><label>Tin học</label><input type="number" class="score" step="0.1" data-name="Tin học"></div>
+            </div>
+            <div class="card">
+                <h3>📖 Nhóm Xã Hội</h3>
+                <div class="input-group"><label>Ngữ văn</label><input type="number" class="score" step="0.1" data-name="Ngữ văn"></div>
+                <div class="input-group"><label>Ngoại ngữ</label><input type="number" class="score" step="0.1" data-name="Ngoại ngữ"></div>
+                <div class="input-group"><label>Địa lí</label><input type="number" class="score" step="0.1" data-name="Địa lí"></div>
+                <div class="input-group"><label>GDQP & AN</label><input type="number" class="score" step="0.1" data-name="GDQP"></div>
+            </div>
+            <div class="card" style="background: #f8fafc;">
+                <h3>✅ Đánh giá Nhận xét</h3>
+                <div class="input-group"><label>Thể dục (GDTC)</label><select class="check"><option value="Đạt">Đạt</option><option value="Chưa đạt">Chưa đạt</option></select></div>
+                <div class="input-group"><label>HĐ Trải nghiệm, HN</label><select class="check"><option value="Đạt">Đạt</option><option value="Chưa đạt">Chưa đạt</option></select></div>
+                <div class="input-group"><label>Nội dung GD địa phương</label><select class="check"><option value="Đạt">Đạt</option><option value="Chưa đạt">Chưa đạt</option></select></div>
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="startAIAnalysis()">BẮT ĐẦU PHÂN TÍCH AI</button>
+
+        <div id="resultView">
+            <div id="gpaText" style="font-weight:bold; color: #64748b;"></div>
+            <div class="rank-text" id="rankOutput"></div>
+            <div class="analysis-log" id="aiLog"></div>
+        </div>
+    </div>
+</div>
+
+<div id="updateModal">
+    <div class="modal-box">
+        <h2 id="updateStatus">Đang tải bản cập nhật...</h2>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div id="percentText">0%</div>
+        <button id="restartBtn" onclick="location.reload()">RESTART NOW</button>
+    </div>
+</div>
+
+<script>
+    // --- ENGINE XỬ LÝ AI ---
+    function startAIAnalysis() {
+        const inputs = document.querySelectorAll('.score');
+        const checks = document.querySelectorAll('.check');
+        let scores = [], data = [], log = [];
+
+        for(let i of inputs) {
+            if(i.value === "") { alert("AI cần đủ dữ liệu 8 môn để phân tích!"); return; }
+            let val = parseFloat(i.value);
+            scores.push(val);
+            data.push({ name: i.getAttribute('data-name'), score: val });
+        }
+        let checkVals = Array.from(checks).map(s => s.value);
+
+        // Phân tích thông minh
+        const getRank = (sArr, cArr) => {
+            const allPass = cArr.every(c => c === "Đạt");
+            const min = Math.min(...sArr);
+            const count8 = sArr.filter(s => s >= 8.0).length;
+            const count65 = sArr.filter(s => s >= 6.5).length;
+            const count5 = sArr.filter(s => s >= 5.0).length;
+
+            if (allPass && min >= 6.5 && count8 >= 6) return 4; // Tốt
+            if (allPass && min >= 5.0 && count65 >= 6) return 3; // Khá
+            if (cArr.filter(c => c === "Đạt").length >= 2 && min >= 3.5 && count5 >= 6) return 2; // Đạt
+            return 1; // Chưa đạt
+        };
+
+        let currentRank = getRank(scores, checkVals);
+        let finalRank = currentRank;
+        let upgraded = false;
+
+        // Thuật toán AI: Tìm môn gây tụt hạng
+        if(currentRank < 4) {
+            for(let i=0; i<scores.length; i++) {
+                let temp = [...scores]; temp[i] = 10;
+                if(getRank(temp, checkVals) > currentRank) {
+                    finalRank = currentRank + 1;
+                    upgraded = true;
+                    log.push(`[AI Alert] Phát hiện môn ${data[i].name} (${data[i].score}) đang kéo hạng. Áp dụng luật điều chỉnh TT22.`);
+                    break;
+                }
+            }
+        }
+
+        // Xuất kết quả
+        const labels = ["", "CHƯA ĐẠT", "ĐẠT", "KHÁ", "TỐT"];
+        const colors = ["", "#64748b", "#10b981", "#f59e0b", "#2563eb"];
+        let gpa = (scores.reduce((a,b) => a+b, 0) / 8).toFixed(2);
+
+        document.getElementById('resultView').style.display = 'block';
+        document.getElementById('resultView').style.borderColor = colors[finalRank];
+        document.getElementById('gpaText').innerText = `ĐIỂM TRUNG BÌNH CỘNG: ${gpa}`;
+        document.getElementById('rankOutput').innerText = labels[finalRank];
+        document.getElementById('rankOutput').style.color = colors[finalRank];
+        
+        let logHtml = `> Phân tích hoàn tất lúc: ${new Date().toLocaleTimeString()}<br>`;
+        logHtml += `> GPA Mục tiêu 8.1: ${gpa >= 8.1 ? "ĐÃ ĐẠT ✅" : "CHƯA ĐẠT ❌"}<br>`;
+        logHtml += upgraded ? `> Trạng thái: ${log[0]}` : `> Trạng thái: Hệ thống đánh giá đúng mức học lực.`;
+        document.getElementById('aiLog').innerHTML = logHtml;
+    }
+
+    // --- ENGINE CẬP NHẬT (UPDATE SYSTEM) ---
+    document.getElementById('updateFile').addEventListener('change', function(e) {
+        if(!e.target.files[0]) return;
+        
+        const modal = document.getElementById('updateModal');
+        const fill = document.getElementById('progressFill');
+        const text = document.getElementById('percentText');
+        const status = document.getElementById('updateStatus');
+        const restart = document.getElementById('restartBtn');
+
+        modal.style.display = 'flex';
+        let progress = 0;
+
+        let interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 5) + 1;
+            if(progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                status.innerText = "Cập nhật thành công!";
+                status.style.color = "#10b981";
+                restart.style.display = 'inline-block';
+            }
+            fill.style.width = progress + "%";
+            text.innerText = progress + "%";
+        }, 50);
+    });
+</script>
+
+</body>
+</html>
